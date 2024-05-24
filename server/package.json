@@ -1,0 +1,39 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "cross-env NODE_ENV=development nodemon index.ts",
+    "build": "tsc",
+    "pkg": "tsc && pkg package.json --out-path dist/ && node rename.js"
+  },
+  "bin": "./build/index.js",
+  "pkg": {
+    "assets": "../dist/*",
+    "targets": [
+      "node16-win-x64"
+    ]
+  },
+  "author": {
+    "url": "https://github.com/sad-xu/kizuna-of-light",
+    "email": "1031568754@qq.com",
+    "name": "妙蛤种子@琥珀原"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sad-xu/kizuna-of-light"
+  },
+  "dependencies": {
+    "axios": "0.24.0",
+    "cross-env": "7.0.3",
+    "express": "4.17.1"
+  },
+  "devDependencies": {
+    "@types/express": "4.17.13",
+    "@types/node": "16.3.1",
+    "nodemon": "2.0.12",
+    "ts-node": "10.1.0",
+    "typescript": "4.3.5"
+  }
+}
