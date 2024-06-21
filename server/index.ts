@@ -26,7 +26,7 @@ app.use((req, res, next) => {
   res.status(404).send('🐸 404 Not Found! 🐸');
 });
 
-const server = app.listen(0, () => {
+const server = app.listen(8653, () => {
   const port = (server.address() as any).port || '';
   if (!isDev) {
     c.exec(`start http://localhost:${port}/`);

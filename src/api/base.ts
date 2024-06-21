@@ -5,7 +5,7 @@ const urlBase = '/api/base';
 export function getTestData() {
   return request({
     url: urlBase + '/test1',
-    method: 'get'
+    method: 'get',
   });
 }
 

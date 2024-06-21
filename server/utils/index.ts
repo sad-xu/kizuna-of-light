@@ -33,7 +33,7 @@ export const checkParams = (res: any, isFail: boolean) => {
 // export const ESCAPE_REG = /(\$|\$|\(|\)|\*|\+|\.|\[|\]|\?|\\|\^|\{|\}|\|)/g
 
 /** 本地配置 */
-export const config = {
+export const setting = {
   /** cookie */
   cookie: '',
   /** 每次请求的间隔 */
@@ -41,4 +41,4 @@ export const config = {
 };
 
 /** 修改配置 */
-export const changeConfig = () => {};
+export const changeSetting = () => {};

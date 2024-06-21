@@ -17,7 +17,7 @@
     "jsx": "preserve",
     "strict": true
   },
-  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"],
+  "include": ["./global.d.ts", "src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"],
   "exclude": [],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
