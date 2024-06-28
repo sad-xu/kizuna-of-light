@@ -1,8 +1,9 @@
 const generateMockUserList = (n = 10) => {
-  return Array.from({ length: n }).map((v, i) => {
+  return Array.from({ length: n }).map((_) => {
+    const j = Math.round(Math.random() * n);
     return {
-      uuid: `1000${i}`,
-      character_name: `name_${i}`,
+      uuid: `1000${j}`,
+      character_name: `name_${j}`,
       avatar:
         'https://ff14risingstones.gcloud.com.cn/default/20240314/10094041/c5d830bb304142579562465219f55a9c/1710387368557_505fc4651710387368557.jpg',
       test_limited_badge: 0,
@@ -48,7 +49,27 @@ const generateMockRelation = (userList: any[]) => {
 };
 
 /** 模拟用户列表 */
-export const mockAllUser = generateMockUserList(20);
+export const mockAllUser = generateMockUserList(10);
 
 /** 所有相关人的关注和粉丝关系 */
 export const mockRelationData = generateMockRelation(mockAllUser);
+
+/** 生成新增关系 */
+export function generateRelationData(num: number) {
+  const relationList: any[] = [];
+  const sourceUser = generateMockUserList(10);
+  const targetUser = generateMockUserList(10);
+  const type = Math.random() > 0.5 ? 1 : 2;
+  sourceUser.forEach((user, i) => {
+    targetUser.forEach((u, j) => {
+      if (Math.random() > 0.8 && i != j) {
+        relationList.push({
+          source: user,
+          target: u,
+          type: type,
+        });
+      }
+    });
+  });
+  return relationList;
+}

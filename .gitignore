@@ -29,4 +29,5 @@ package-lock.json
 /server/node_modules
 /server/build
 /server/dist
+/server/utils/ffxiv_relation
 /dist

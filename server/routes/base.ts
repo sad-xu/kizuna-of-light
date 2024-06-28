@@ -1,6 +1,17 @@
+import fs from 'fs';
+import path from 'path';
 import express from 'express';
 import { ret } from '../utils';
-import { randomDelay, getAllFollowsById, getAllFansById } from '../utils/spider';
+import {
+  randomDelay,
+  getAllFollowsById,
+  getAllFansById,
+  UserInfo,
+  checkIsSpidering,
+  startSpider,
+  addResCallback,
+} from '../utils/spider';
+import { Response } from 'express-serve-static-core';
 
 const router = express.Router();
 
@@ -25,7 +36,7 @@ router.post('/test2', async (req, res, next) => {
 });
 
 /** 修改配置 */
-router.post('/chenge-setting', async (req, res, next) => {
+router.post('/change-setting', async (req, res, next) => {
   try {
     const { key, value } = req.body;
 
@@ -41,8 +52,10 @@ router.post('/chenge-setting', async (req, res, next) => {
   follows: [],
   fans: []
 }]
-
 */
+
+/** 是否正在爬取 同一时刻只能有一个任务 */
+let isSpidering = false;
 
 /** 爬取粉丝和关注 */
 router.get('/sse-spider', async (req, res, next) => {
@@ -54,63 +67,16 @@ router.get('/sse-spider', async (req, res, next) => {
     });
     res.flushHeaders();
 
-    // 当前爬取深度 0我-1关注&粉丝-2关注&粉丝
-    let depth = 0;
-    const depthCount = [1, 1, 1];
-    // 待爬取用户
-    const uuidList = new Set();
-    // 已记录用户
-    const markedId = new Set();
-    // 所有数据
-    const allData = [];
+    addResCallback(res);
 
-    uuidList.add('10200500');
-
-    // 获取目标用户的关注和粉丝
-    for (let i = 0; i < uuidList.size; i++) {
-      const id = uuidList[i];
-      markedId.add(id);
-      // 单个人爬取开始
-      res.write(`event: partStart\ndata: ${i + 1}\n\n`);
-      await getAllFollowsById(id, (d) => {
-        // 每个接口的数据
-        d.list.forEach((item) => {
-          const nId = item.uuid;
-          if (!markedId.has(nId)) {
-            uuidList.add(nId);
-          }
-        });
-        res.write(`event: follows\ndata: ${JSON.stringify(d)}\n\n`);
-      });
-      await getAllFansById(id, (d) => {
-        // 每个接口的数据
-        d.list.forEach((item) => {
-          const nId = item.uuid;
-          if (!markedId.has(nId)) {
-            uuidList.add(nId);
-          }
-        });
-        res.write(`event: fans\ndata: ${JSON.stringify(d)}\n\n`);
-      });
-
-      // 单个人爬取结束
-      res.write(`event: partEnd\ndata: ${i + 1}\n\n`);
-
-      if (depth == 0) {
-        depthCount[1] = uuidList.size;
-        depth += 1;
-      } else if (depth == 1 && i == depthCount[1] - 1) {
-        depthCount[2] = uuidList.size;
-        depth += 1;
-      } else if (depth == 2 && i == depthCount[2] - 1) {
-        break;
-      }
+    if (checkIsSpidering()) {
+      res.write(`event: occupied\ndata: true\n\n`);
+    } else {
+      const reqId = `${req.query.id}` || '10200500';
+      startSpider(reqId);
     }
-
-    // 所有任务完成
-    res.write(`event: end\ndata: 1\n\n`);
-    res.end();
   } catch (err) {
+    isSpidering = false;
     next(err);
   }
 });

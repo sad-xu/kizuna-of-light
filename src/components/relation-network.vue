@@ -6,10 +6,16 @@
   // @ts-nocheck
 
   import { onMounted, ref } from 'vue';
-  import { mockRelationData } from '@/utils/mock';
+  import { mockRelationData, generateRelationData } from '@/utils/mock';
 
   const relationChartRef = ref();
+  let svg;
+  let lines;
+  let dots;
+  // 所有节点
+  let allNodes = new Set();
 
+  /** svg弧线 */
   function linkArc(d) {
     const r = Math.hypot(d.target.x - d.source.x, d.target.y - d.source.y);
     return `
@@ -18,6 +24,7 @@
     `;
   }
 
+  /** 拖拽 */
   const drag = (simulation) => {
     function dragstarted(event, d) {
       if (!event.active) simulation.alphaTarget(0.3).restart();
@@ -43,31 +50,32 @@
     const width = window.innerWidth;
     const height = window.innerHeight;
     const relationData = mockRelationData;
-    const types = Array.from(new Set(relationData.map((d) => d.type)));
-    const nodes = Array.from(new Set(relationData.flatMap((l) => [l.source, l.target])));
+    const types = [1, 2];
+    allNodes = new Set(relationData.flatMap((l) => [l.source, l.target]));
+    const nodes = Array.from(allNodes);
     const links = relationData.map((d) => Object.create(d));
 
     const color = d3.scaleOrdinal(types, d3.schemeCategory10);
 
-    console.log(nodes, links);
-
     const simulation = d3
       .forceSimulation(nodes)
-      .force(
-        'link',
-        d3.forceLink(links).id((d) => d.uuid)
-      )
+      // .force(
+      //   'link',
+      //   d3.forceLink(links).id((d) => d.uuid)
+      // )
       .force('charge', d3.forceManyBody().strength(-800))
       .force('x', d3.forceX())
       .force('y', d3.forceY());
 
-    const svg = d3
+    // 画布
+    svg = d3
       .create('svg')
       .attr('viewBox', [-width / 2, -height / 2, width, height])
       .attr('width', width)
       .attr('height', height)
       .attr('style', 'width: 100%; height: 100%; font: 12px sans-serif;');
 
+    // 定义线的样式
     svg
       .append('defs')
       .selectAll('marker')
@@ -84,8 +92,10 @@
       .attr('fill', color)
       .attr('d', 'M0,-5L10,0L0,5');
 
+    // 关系
     const link = svg
       .append('g')
+      .attr('id', 'lines')
       .attr('fill', 'none')
       .attr('stroke-width', 1.5)
       .selectAll('path')
@@ -94,8 +104,10 @@
       .attr('stroke', (d) => color(d.type))
       .attr('marker-end', (d) => `url(${new URL(`#arrow-${d.type}`, location)})`);
 
+    // 节点
     const node = svg
       .append('g')
+      .attr('id', 'dots')
       .attr('fill', 'currentColor')
       .attr('stroke-linecap', 'round')
       .attr('stroke-linejoin', 'round')
@@ -117,16 +129,65 @@
     // .attr('stroke', 'white')
     // .attr('stroke-width', 3);
 
+    lines = link;
+    dots = node;
     simulation.on('tick', () => {
       link.attr('d', linkArc);
       node.attr('transform', (d) => `translate(${d.x},${d.y})`);
     });
 
     relationChartRef.value.append(Object.assign(svg.node(), { scales: { color } }));
+    console.log(svg);
   };
 
   onMounted(() => {
     initChart();
+  });
+
+  const addRelation = () => {
+    const relationData = generateRelationData(5);
+    const types = Array.from(new Set(relationData.map((d) => d.type)));
+    const nodes = Array.from(new Set(relationData.flatMap((l) => [l.source, l.target])));
+    const links = relationData.map((d) => Object.create(d));
+    const color = d3.scaleOrdinal(types, d3.schemeCategory10);
+    const simulation = d3
+      .forceSimulation(nodes)
+      .force(
+        'link',
+        d3.forceLink(links).id((d) => d.uuid)
+      )
+      .force('charge', d3.forceManyBody().strength(-800))
+      .force('x', d3.forceX())
+      .force('y', d3.forceY());
+
+    const link = lines
+      .data(links)
+      .join('path')
+      .attr('stroke', (d) => color(d.type))
+      .attr('marker-end', (d) => `url(${new URL(`#arrow-${d.type}`, location)})`);
+
+    const node = dots.data(nodes).join('g').call(drag(simulation));
+
+    node.append('circle').attr('stroke', 'white').attr('stroke-width', 1.5).attr('r', 4);
+
+    node
+      .append('text')
+      .attr('x', 8)
+      .attr('y', '0.31em')
+      .text((d) => d.character_name)
+      .clone(true)
+      .lower();
+
+    simulation.on('tick', () => {
+      link.attr('d', linkArc);
+      node.attr('transform', (d) => `translate(${d.x},${d.y})`);
+    });
+    // relationChartRef.value.append(Object.assign(svg.node(), { scales: { color } }));
+    console.log(relationData);
+  };
+
+  defineExpose({
+    addRelation,
   });
 </script>
 
