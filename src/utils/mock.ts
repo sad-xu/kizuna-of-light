@@ -1,9 +1,9 @@
 const generateMockUserList = (n = 10) => {
   return Array.from({ length: n }).map((_) => {
-    const j = Math.round(Math.random() * n);
+    const j = Math.round(Math.random() * 20);
     return {
       uuid: `1000${j}`,
-      character_name: `name_${j}`,
+      character_name: `n_${j}`,
       avatar:
         'https://ff14risingstones.gcloud.com.cn/default/20240314/10094041/c5d830bb304142579562465219f55a9c/1710387368557_505fc4651710387368557.jpg',
       test_limited_badge: 0,
@@ -57,8 +57,8 @@ export const mockRelationData = generateMockRelation(mockAllUser);
 /** 生成新增关系 */
 export function generateRelationData(num: number) {
   const relationList: any[] = [];
-  const sourceUser = generateMockUserList(10);
-  const targetUser = generateMockUserList(10);
+  const sourceUser = generateMockUserList(num);
+  const targetUser = generateMockUserList(num);
   const type = Math.random() > 0.5 ? 1 : 2;
   sourceUser.forEach((user, i) => {
     targetUser.forEach((u, j) => {

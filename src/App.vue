@@ -1,9 +1,11 @@
 <template>
   <div>
-    <div style="z-index: 9; position: relative">
-      <button @click="test1">button1</button>
-      <button @click="start">开始爬取</button>
-      <button @click="addRelation">添加关系</button>
+    <div style="position: relative">
+      <div style="position: relative; z-index: 9">
+        <button @click="test1">button1</button>
+        <button @click="start">开始爬取</button>
+        <button @click="addRelation">添加关系</button>
+      </div>
       <div ref="logRef" class="log-box">
         <div v-for="(item, i) in logList" :key="i">{{ item }}</div>
       </div>
@@ -87,9 +89,9 @@
 
 <style lang="scss" scoped>
   .log-box {
-    height: 300px;
     width: 400px;
-    border: 1px solid #f00;
+    height: 300px;
     overflow-y: auto;
+    border: 1px solid #f00;
   }
 </style>
