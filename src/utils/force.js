@@ -87,58 +87,6 @@ const lcg = () => {
   };
 };
 
-/** forceCenter */
-const forceCenter = (x = 0, y = 0) => {
-  let nodes = [];
-  let strength = 1;
-
-  //力模拟
-  function force() {
-    let sx = 0;
-    let sy = 0;
-
-    nodes.forEach((node) => {
-      sx += node.x;
-      sy += node.y;
-    });
-
-    sx = (sx / nodes.length - x) * strength;
-    sy = (sy / nodes.length - y) * strength;
-
-    nodes.forEach((node) => {
-      node.x -= sx;
-      node.y -= sy;
-    });
-  }
-
-  force.initialize = (v) => {
-    nodes = v;
-  };
-
-  force.x = (v) => {
-    if (v != undefined) {
-      x = +v;
-      return force;
-    } else return x;
-  };
-
-  force.y = (v) => {
-    if (v != undefined) {
-      y = +v;
-      return force;
-    } else return x;
-  };
-
-  force.strength = (v) => {
-    if (v != undefined) {
-      strength = +v;
-      return force;
-    } else return strength;
-  };
-
-  return force;
-};
-
 /** forceSimulation */
 const forceSimulation = (nodes = []) => {
   let alpha = 1;
@@ -182,7 +130,6 @@ const forceSimulation = (nodes = []) => {
           node.y = node.fy;
           node.vy = 0;
         }
-        console.log('!! ', node);
       });
     }
     return simulation;
@@ -269,7 +216,7 @@ const forceSimulation = (nodes = []) => {
       return simulation;
     },
     //获取最近的节点
-    find: (x, y, radius) => {
+    find: (x, y, radius = Infinity) => {
       let dx;
       let dy;
       let d2;
@@ -293,7 +240,302 @@ const forceSimulation = (nodes = []) => {
   return simulation;
 };
 
+/** forceX */
+const forceX = (x = 0) => {
+  let strength = () => 0.1;
+  let nodes = [];
+  let xz = [];
+  let strengths = [];
+
+  if (typeof x !== 'function') {
+    const v = x;
+    x = () => v;
+  }
+
+  function force(alpha) {
+    nodes.forEach((node, i) => {
+      node.vx += (xz[i] - node.x) * strengths[i] * alpha;
+    });
+  }
+
+  function initialize() {
+    if (!nodes) return;
+    const len = nodes.length;
+    strengths = new Array(len);
+    xz = new Array(len);
+    nodes.forEach((node, i) => {
+      xz[i] = x(node, i, nodes);
+      strengths[i] = isNaN(xz[i]) ? 0 : strength(node, i, nodes);
+    });
+  }
+
+  force.initialize = (v = []) => {
+    nodes = v;
+    initialize();
+  };
+
+  force.strength = (v) => {
+    if (v != undefined) {
+      strength = typeof v === 'function' ? v : () => v;
+      initialize();
+      return force;
+    } else return strength;
+  };
+
+  force.x = (v) => {
+    if (v != undefined) {
+      x = typeof v === 'function' ? v : () => v;
+      initialize();
+      return force;
+    } else return x;
+  };
+
+  return force;
+};
+
+/** forceY */
+const forceY = (y) => {
+  let strength = () => 0.1;
+  let nodes = [];
+  let yz = [];
+  let strengths = [];
+
+  if (typeof y !== 'function') {
+    const v = y;
+    y = () => v;
+  }
+
+  function force(alpha) {
+    nodes.forEach((node, i) => {
+      node.vy += (yz[i] - node.y) * strengths[i] * alpha;
+    });
+  }
+
+  function initialize() {
+    if (!nodes) return;
+    const len = nodes.length;
+    strengths = new Array(len);
+    yz = new Array(len);
+    nodes.forEach((node, i) => {
+      yz[i] = y(node, i, nodes);
+      strengths[i] = isNaN(yz[i]) ? 0 : strength(node, i, nodes);
+    });
+  }
+
+  force.initialize = (v = []) => {
+    nodes = v;
+    initialize();
+  };
+
+  force.strength = (v) => {
+    if (v != undefined) {
+      strength = typeof v === 'function' ? v : () => v;
+      initialize();
+      return force;
+    } else return strength;
+  };
+
+  force.y = (v) => {
+    if (v != undefined) {
+      y = typeof v === 'function' ? v : () => v;
+      initialize();
+      return force;
+    } else return y;
+  };
+
+  return force;
+};
+
+/** forceCenter 中心力 */
+const forceCenter = (x = 0, y = 0) => {
+  let nodes = [];
+  let strength = 1;
+
+  //力模拟
+  function force() {
+    let sx = 0;
+    let sy = 0;
+
+    nodes.forEach((node) => {
+      sx += node.x;
+      sy += node.y;
+    });
+
+    sx = (sx / nodes.length - x) * strength;
+    sy = (sy / nodes.length - y) * strength;
+
+    nodes.forEach((node) => {
+      node.x -= sx;
+      node.y -= sy;
+    });
+  }
+
+  force.initialize = (v) => {
+    nodes = v;
+  };
+
+  force.x = (v) => {
+    if (v != undefined) {
+      x = +v;
+      return force;
+    } else return x;
+  };
+
+  force.y = (v) => {
+    if (v != undefined) {
+      y = +v;
+      return force;
+    } else return x;
+  };
+
+  force.strength = (v) => {
+    if (v != undefined) {
+      strength = +v;
+      return force;
+    } else return strength;
+  };
+
+  return force;
+};
+
+// /** forceCollide 碰撞力 */
+// const forceCollide = (radius = 1) => {
+//   let nodes = [];
+//   let radii;
+//   let random;
+//   let strength = 1;
+//   let iterations = 1;
+
+//   function force() {
+//     let tree;
+//     let xi;
+//     let yi;
+//     let ri;
+//     let ri2;
+
+//     for (let i = 0; i < iterations; i++) {
+//       tree = quadtree(nodes, x, y).visitAfter(prepare);
+//       nodes.forEach((node) => {
+//         ri = radii[node.index];
+//         ri2 = ri * ri;
+//         xi = node.x + node.vx;
+//         yi = node.y + node.vy;
+//         tree.visit(apply);
+//       });
+//     }
+
+//     function apply(quad, x0, y0, x1, y1) {
+//       let data = quad.data;
+//       let rj = quad.r;
+//       let r = ri + rj;
+//       if (data) {
+//         if (data.index > node.index) {
+//           let x = xi - data.x - data.vx;
+//           let y = yi - data.y - data.vy;
+//           let l = x * x + y * y;
+//           if (l < r * r) {
+//             if (x === 0) {
+//               x = jiggle(random);
+//               l += x * x;
+//             }
+//             if (y === 0) {
+//               y = jiggle(random);
+//               l += y * y;
+//             }
+//             l = ((r - (l = Math.sqrt(l))) / l) * strength;
+//             node.vx += (x *= l) * (r = (rj *= rj) / (ri2 + rj));
+//             node.vy += (y *= l) * r;
+//             data.vx -= x * (r = 1 - r);
+//             data.vy -= y * r;
+//           }
+//         }
+//         return;
+//       }
+//       return x0 > xi + r || x1 < xi - r || y0 > yi + r || y1 < yi - r;
+//     }
+//   }
+
+//   function jiggle(randomFn) {
+//     return (randomFn() - 0.5) * 1e-6;
+//   }
+
+//   function prepare(quad) {
+//     if (quad.data) return (quad.r = radii[quad.data.index]);
+//     quad.r = 0;
+//     for (let i = 0; i < 4; ++i) {
+//       if (quad[i] && quad[i].r > quad.r) {
+//         quad.r = quad[i].r;
+//       }
+//     }
+//   }
+
+//   function initialize() {
+//     radii = [];
+//     nodes.forEach((node, i) => {
+//       radii[node.index] = +radius(node, i, nodes);
+//     });
+//   }
+
+//   force.initialize = (_nodes, _random) => {
+//     nodes = _nodes;
+//     random = _random;
+//     initialize();
+//   };
+
+//   force.iterations = function (v) {
+//     if (v != undefined) {
+//       iterations = v;
+//       return force;
+//     } else return iterations;
+//   };
+
+//   force.strength = function (v) {
+//     if (v != undefined) {
+//       strength = v;
+//       return force;
+//     } else return strength;
+//   };
+
+//   force.radius = (v) => {
+//     if (v != undefined) {
+//       radius = v;
+//       initialize();
+//       return force;
+//     } else return radius;
+//   };
+
+//   return force;
+// };
+
+// /** quad tree */
+// function quadtree(nodes, x, y) {
+//   const tree = new Quadtree(x, y, NaN, NaN, NaN, NaN);
+//   if (nodes) {
+//     tree.addAll(nodes);
+//   }
+//   return tree;
+// }
+
+// function Quadtree(x, y, x0, y0, x1, y1) {
+//   this._x = x;
+//   this._y = y;
+//   this._x0 = x0;
+//   this._y0 = y0;
+//   this._x1 = x1;
+//   this._y1 = y1;
+//   this._root = undefined;
+// }
+
+// Quadtree.prototype.visitAfter = (cb) => {
+//   const quads = [];
+//   const next = [];
+//   // const q;
+// };
+
 export default {
-  forceCenter,
   forceSimulation,
+  forceCenter,
+  forceX,
+  forceY,
+  // forceCollide,
 };

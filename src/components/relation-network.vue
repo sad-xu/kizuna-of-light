@@ -10,8 +10,8 @@
 
   const relationChartRef = ref();
   let svg;
-  let lines;
-  let dots;
+  let gNodes;
+  let gLinks;
   // 所有节点id
   let allNodesId = new Set();
   const allNodes = [];
@@ -20,15 +20,6 @@
   const lineType = [1, 2];
   const lineColor = d3.scaleOrdinal(lineType, d3.schemeCategory10);
   let forceSimulation;
-
-  /** svg弧线 */
-  function linkArc(d) {
-    const r = Math.hypot(d.target.x - d.source.x, d.target.y - d.source.y);
-    return `
-      M${d.source.x},${d.source.y}
-      A${r},${r} 0 0,1 ${d.target.x},${d.target.y}
-    `;
-  }
 
   /** 拖拽 */
   const drag = (simulation) => {
@@ -98,7 +89,7 @@
       .attr('d', 'M0,-5L10,0L0,5');
 
     // 关系
-    const link = svg
+    gLinks = svg
       .append('g')
       .attr('id', 'lines')
       .attr('fill', 'none')
@@ -107,10 +98,10 @@
       .data(allLinks)
       .join('path')
       .attr('stroke', (d) => lineColor(d.type))
-      .attr('marker-end', (d) => `url(${new URL(`#arrow-${d.type}`, location)})`);
+      .attr('marker-end', (d) => `url(#arrow-${d.type})`);
 
     // 节点
-    const node = svg
+    gNodes = svg
       .append('g')
       .attr('id', 'dots')
       .attr('fill', 'currentColor')
@@ -155,79 +146,70 @@
       })
       .call(drag(forceSimulation));
 
-    node.append('circle').attr('stroke', 'white').attr('stroke-width', 1.5).attr('r', 4);
-    node
+    gNodes.append('circle').attr('stroke', 'white').attr('stroke-width', 1.5).attr('r', 4);
+    gNodes
       .append('text')
       .attr('x', 8)
       .attr('y', 4)
       .text((d) => d.character_name);
 
-    lines = link;
-    dots = node;
-    forceSimulation.on('tick', () => {
-      lines.attr('d', linkArc);
-      dots.attr('transform', (d) => `translate(${d.x},${d.y})`);
-    });
+    forceSimulation.on('tick', ticked);
 
     relationChartRef.value.append(Object.assign(svg.node(), { scales: { color: lineColor } }));
-    console.log(lines, dots);
+    console.log(gNodes);
   };
 
   onMounted(() => {
     initChart(mockRelationData);
   });
 
+  /** 力更新 */
+  function ticked() {
+    gLinks.attr('d', (d) => {
+      const r = Math.hypot(d.target.x - d.source.x, d.target.y - d.source.y);
+      return `
+        M${d.source.x},${d.source.y}
+        A${r},${r} 0 0,1 ${d.target.x},${d.target.y}
+      `;
+    });
+    gNodes.attr('transform', (d) => `translate(${d.x},${d.y})`);
+  }
+
   const addRelation = () => {
     const relationData = generateRelationData(5);
-    const nodes = [];
     new Set(relationData.flatMap((l) => [l.source, l.target])).forEach((item) => {
       if (!allNodesId.has(item.uuid)) {
         allNodesId.add(item.uuid);
-        nodes.push(item);
+        allNodes.push(item);
+        console.log(item);
       }
     });
 
     const links = relationData.map((d) => Object.create(d));
-    const link = svg
-      .append('g')
-      .attr('id', 'lines')
-      .attr('fill', 'none')
-      .attr('stroke-width', 1.5)
-      .selectAll('path')
-      .data(links)
-      .join('path')
-      .attr('stroke', (d) => lineColor(d.type))
-      .attr('marker-end', (d) => `url(${new URL(`#arrow-${d.type}`, location)})`);
+    allLinks.push(...links);
 
-    const node = svg
-      .append('g')
-      .attr('fill', 'currentColor')
-      .attr('stroke-linecap', 'round')
-      .attr('stroke-linejoin', 'round')
-      .selectAll('g')
-      .data(nodes)
-      .join('g')
-      .call(drag(forceSimulation));
-    node.append('circle').attr('stroke', 'white').attr('stroke-width', 1.5).attr('r', 4);
-    node
+    gNodes = gNodes.data(allNodes).enter().append('g').call(drag(forceSimulation));
+    gNodes.append('circle').attr('stroke', 'white').attr('stroke-width', 1.5).attr('r', 4);
+    gNodes
       .append('text')
       .attr('x', 8)
       .attr('y', '0.31em')
-      .text((d) => d.character_name)
-      .clone(true)
-      .lower();
+      .text((d) => d.character_name);
 
-    allNodes.push(...nodes);
-    allLinks.push(...links);
+    gLinks = gLinks
+      .data(allLinks)
+      .enter()
+      .append('path')
+      .attr('stroke', (d) => lineColor(d.type))
+      .attr('marker-end', (d) => `url(#arrow-${d.type})`);
+
     forceSimulation.nodes(allNodes);
     forceSimulation.force('link').links(allLinks);
+    forceSimulation.restart();
 
-    forceSimulation.on('tick', () => {
-      // TODO: 更新所有节点
-      // link.attr('d', linkArc);
-      // node.attr('transform', (d) => `translate(${d.x},${d.y})`);
-    });
-    // relationChartRef.value.append(Object.assign(svg.node(), { scales: { color } }));
+    forceSimulation.on('tick', ticked);
+
+    // relationChartRef.value.append(Object.assign(svg.node(), { scales: { color: lineColor } }));
     console.log(relationData);
   };
 
