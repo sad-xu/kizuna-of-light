@@ -12,9 +12,9 @@
     TooltipComponent,
     GridComponent,
     LegendComponent,
-    VisualMapComponent,
+    // VisualMapComponent,
     DataZoomComponent,
-    GraphicComponent,
+    // GraphicComponent,
   } from 'echarts/components';
   import { CanvasRenderer } from 'echarts/renderers';
   import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
@@ -25,11 +25,11 @@
     TooltipComponent,
     GridComponent,
     LegendComponent,
-    VisualMapComponent,
+    // VisualMapComponent,
     LineChart,
     CanvasRenderer,
     DataZoomComponent,
-    GraphicComponent,
+    // GraphicComponent,
   ]);
 
   echarts.connect('group1');
