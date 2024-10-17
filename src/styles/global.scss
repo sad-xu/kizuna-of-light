@@ -11,16 +11,16 @@
 
 html,
 body {
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
+  // width: 100vw;
+  // height: 100vh;
+  // overflow: hidden;
 }
 
 #app {
   height: 100%;
-  color: #eee;
+  color: #333;
   font-size: 16px;
-  background-color: #333;
+  background-color: #fff;
 }
 
 img {
@@ -32,11 +32,11 @@ svg {
   vertical-align: middle;
 }
 
-input,
-button {
-  outline: none;
-  appearance: none;
-}
+// input,
+// button {
+//   outline: none;
+//   appearance: none;
+// }
 
 input[type='text'] {
   display: block;
