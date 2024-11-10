@@ -1,6 +1,6 @@
 const generateMockUserList = (n = 10) => {
   return Array.from({ length: n }).map((_) => {
-    const j = Math.round(Math.random() * 20);
+    const j = Math.round(Math.random() * 100);
     return {
       uuid: `1000${j}`,
       character_name: `n_${j}`,
@@ -49,7 +49,7 @@ const generateMockRelation = (userList: any[]) => {
 };
 
 /** 模拟用户列表 */
-export const mockAllUser = generateMockUserList(10);
+export const mockAllUser = generateMockUserList(5);
 
 /** 所有相关人的关注和粉丝关系 */
 export const mockRelationData = generateMockRelation(mockAllUser);

@@ -7,7 +7,7 @@ import autoprefixer from 'autoprefixer';
 const isDev = process.env.NODE_ENV == 'development';
 
 export default defineConfig({
-  base: '/code-stats',
+  base: '/kizuna',
   server: {
     port: 8766,
     host: true,

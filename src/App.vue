@@ -1,25 +1,28 @@
 <template>
   <div>
-    <div style="position: relative; display: none">
+    <div style="position: relative">
       <div style="position: relative; z-index: 9">
-        <button @click="test1">button1</button>
-        <button @click="start">开始爬取</button>
+        <!-- <button @click="test1">button1</button>
+        <button @click="start">开始爬取</button> -->
         <button @click="addRelation">添加关系</button>
       </div>
-      <div ref="logRef" class="log-box">
+      <!-- <div ref="logRef" class="log-box">
         <div v-for="(item, i) in logList" :key="i">{{ item }}</div>
-      </div>
+      </div> -->
     </div>
-    <!-- <relation-network ref="relationNetworkRef"></relation-network> -->
-    <test-content></test-content>
+    <relation-network ref="relationNetworkRef"></relation-network>
+    <!-- <test-box ref="relationNetworkRef"></test-box> -->
+    <!-- <test-content></test-content> -->
   </div>
 </template>
 
 <script lang="ts" setup>
   import { nextTick, ref } from 'vue';
   import { getTestData } from './api/base';
-  import TestContent from './components/test-content.vue';
-  // import RelationNetwork from './components/relation-network.vue';
+  // import TestContent from './components/test-content.vue';
+  import RelationNetwork from './components/relation-network.vue';
+  // import TestBox from './components/test.vue';
+  // import TestBox from './components/test2.vue';
 
   if (!('EventSource' in window)) {
     alert('当前浏览器不支持EventSource，请更换浏览器');

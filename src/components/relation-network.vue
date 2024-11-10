@@ -60,6 +60,7 @@
         d3.forceLink(allLinks).id((d) => d.uuid)
       )
       .force('charge', d3.forceManyBody().strength(-800))
+      .force('center', d3.forceCenter(0, 0))
       .force('x', d3.forceX())
       .force('y', d3.forceY());
 
@@ -70,6 +71,20 @@
       .attr('width', width)
       .attr('height', height)
       .attr('style', 'width: 100%; height: 100%; font: 12px sans-serif;');
+
+    // svg
+    //   .call(
+    //     d3
+    //       .zoom()
+    //       .scaleExtent([0.05, 8])
+    //       .on('zoom', () => {
+    //         var transform = d3.event.transform;
+    //         svg_nodes.attr('transform', transform);
+    //         svg_links.attr('transform', transform);
+    //         svg_text.attr('transform', transform);
+    //       })
+    //   )
+    //   .on('dblclick.zoom', null);
 
     // 定义线的样式
     svg
@@ -153,7 +168,16 @@
       .attr('y', 4)
       .text((d) => d.character_name);
 
-    forceSimulation.on('tick', ticked);
+    forceSimulation.on('tick', () => {
+      gLinks.attr('d', (d) => {
+        const r = Math.hypot(d.target.x - d.source.x, d.target.y - d.source.y);
+        return `
+        M${d.source.x},${d.source.y}
+        A${r},${r} 0 0,1 ${d.target.x},${d.target.y}
+      `;
+      });
+      gNodes.attr('transform', (d) => `translate(${d.x},${d.y})`);
+    });
 
     relationChartRef.value.append(Object.assign(svg.node(), { scales: { color: lineColor } }));
     console.log(gNodes);
@@ -163,20 +187,10 @@
     initChart(mockRelationData);
   });
 
-  /** 力更新 */
-  function ticked() {
-    gLinks.attr('d', (d) => {
-      const r = Math.hypot(d.target.x - d.source.x, d.target.y - d.source.y);
-      return `
-        M${d.source.x},${d.source.y}
-        A${r},${r} 0 0,1 ${d.target.x},${d.target.y}
-      `;
-    });
-    gNodes.attr('transform', (d) => `translate(${d.x},${d.y})`);
-  }
-
+  // 添加节点和联系
   const addRelation = () => {
     const relationData = generateRelationData(5);
+    console.log(relationData);
     new Set(relationData.flatMap((l) => [l.source, l.target])).forEach((item) => {
       if (!allNodesId.has(item.uuid)) {
         allNodesId.add(item.uuid);
@@ -185,10 +199,9 @@
       }
     });
 
-    const links = relationData.map((d) => Object.create(d));
-    allLinks.push(...links);
+    allLinks.push(...relationData.map((d) => Object.create(d)));
 
-    gNodes = gNodes.data(allNodes).enter().append('g').call(drag(forceSimulation));
+    gNodes = gNodes.data(allNodes).enter().append('g').merge(gNodes).call(drag(forceSimulation));
     gNodes.append('circle').attr('stroke', 'white').attr('stroke-width', 1.5).attr('r', 4);
     gNodes
       .append('text')
@@ -201,16 +214,14 @@
       .enter()
       .append('path')
       .attr('stroke', (d) => lineColor(d.type))
-      .attr('marker-end', (d) => `url(#arrow-${d.type})`);
+      .attr('marker-end', (d) => `url(#arrow-${d.type})`)
+      .merge(gLinks);
 
     forceSimulation.nodes(allNodes);
     forceSimulation.force('link').links(allLinks);
-    forceSimulation.restart();
+    forceSimulation.alpha(1).restart();
 
-    forceSimulation.on('tick', ticked);
-
-    // relationChartRef.value.append(Object.assign(svg.node(), { scales: { color: lineColor } }));
-    console.log(relationData);
+    // console.log(relationData);
   };
 
   defineExpose({
