@@ -10,9 +10,8 @@
         <div v-for="(item, i) in logList" :key="i">{{ item }}</div>
       </div> -->
     </div>
-    <relation-network ref="relationNetworkRef"></relation-network>
-    <!-- <test-box ref="relationNetworkRef"></test-box> -->
-    <!-- <test-content></test-content> -->
+    <!-- <relation-network ref="relationNetworkRef"></relation-network> -->
+    <relation-graph ref="relationNetworkRef"></relation-graph>
   </div>
 </template>
 
@@ -20,9 +19,8 @@
   import { nextTick, ref } from 'vue';
   import { getTestData } from './api/base';
   // import TestContent from './components/test-content.vue';
-  import RelationNetwork from './components/relation-network.vue';
-  // import TestBox from './components/test.vue';
-  // import TestBox from './components/test2.vue';
+  // import RelationNetwork from './components/relation-network.vue';
+  import RelationGraph from './components/relation-graph.vue';
 
   if (!('EventSource' in window)) {
     alert('当前浏览器不支持EventSource，请更换浏览器');
